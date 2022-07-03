@@ -11,9 +11,9 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title>Quasar CLI with Vite App</q-toolbar-title>
+        <q-toolbar-title>ingeni</q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <div>alpha v0.0.1</div>
       </q-toolbar>
     </q-header>
 

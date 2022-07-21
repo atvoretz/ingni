@@ -1,12 +1,18 @@
 <template>
   <q-page class="">
+    <div class="q-pa-lg flex flex-center">
+      <q-pagination v-model="page" :max="5" />
+    </div>
     <q-table
-      title="Виталий"
+      title="Входящие запросы"
       :rows="rows"
       :columns="columns"
       row-key="id"
-      :pagination="initialPagination"
-      flat
+      v-model:pagination="pagination"
+      :loading="loading"
+      :filter="filter"
+      @request="onRequest"
+      binary-state-sort
     >
       <template v-slot:header="props">
         <q-tr :props="props">
@@ -59,18 +65,30 @@
           </q-td>
         </q-tr>
       </template>
+      <template v-slot:top-right>
+        <q-input
+          borderless
+          dense
+          debounce="300"
+          v-model="filter"
+          placeholder="Search"
+        >
+          <template v-slot:append>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+      </template>
     </q-table>
+    <div class="q-pa-lg flex flex-center">
+      <q-pagination v-model="current" :max="5" />
+    </div>
   </q-page>
 </template>
 
-<script setup>
+<script>
 import { ref } from 'vue';
 import { defineComponent } from 'vue';
-
-const count = ref(0);
-
-const min = -5;
-const max = 5;
+import { api } from 'boot/axios';
 
 const columns = [
   {
@@ -102,4 +120,36 @@ const columns = [
     sortable: true,
   },
 ];
+
+export default defineComponent({
+  setup() {
+    return {
+      pagination: {
+        sortBy: 'desc',
+        descending: false,
+        page: 1,
+        rowsPerPage: 25,
+        rowsNumber: 100,
+      },
+    };
+  },
+  name: 'PageIndex',
+  data() {
+    return {
+      rows: [],
+      columns,
+    };
+  },
+  created() {
+    api
+      .get('https://ingeni.app/api/?log', {
+        headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
+      })
+      .then((response) => {
+        this.rows = response.data.records;
+        this.initialPagination.rowsNumber = response.data.count;
+      })
+      .catch(() => {});
+  },
+});
 </script>

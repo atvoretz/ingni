@@ -1,7 +1,7 @@
 <template>
   <q-page class="">
     <q-table
-      title="Входящие запросы"
+      title="Виталий"
       :rows="rows"
       :columns="columns"
       row-key="id"

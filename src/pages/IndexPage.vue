@@ -1,5 +1,5 @@
 <template>
-  <q-page class="column flex-center">
+  <q-page class="">
     <q-table
       title="Входящие запросы"
       :rows="rows"
@@ -102,33 +102,4 @@ const columns = [
     sortable: true,
   },
 ];
-
-export default defineComponent({
-  setup() {
-    return {
-      initialPagination: {
-        sortBy: 'desc',
-        descending: false,
-        page: 1,
-        rowsPerPage: 25,
-        // rowsNumber: xx if getting data from a server
-      },
-    };
-  },
-  name: 'PageIndex',
-  data() {
-    return {
-      rows: [],
-      columns,
-    };
-  },
-  created() {
-    axios
-      .get('https://ingeni.app/api/?log')
-      .then((response) => {
-        this.rows = response.data.records;
-      })
-      .catch(() => {});
-  },
-});
 </script>

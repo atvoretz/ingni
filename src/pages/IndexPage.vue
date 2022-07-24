@@ -1,8 +1,5 @@
 <template>
   <q-page class="">
-    <div class="q-pa-lg flex flex-center">
-      <q-pagination v-model="page" :max="5" />
-    </div>
     <q-table
       title="Входящие запросы"
       :rows="rows"
@@ -61,7 +58,13 @@
             </span>
           </q-td>
           <q-td colspan="50%" style="vertical-align: top">
-            <pre>{{ props.row.body }}</pre>
+            <JsonViewer
+              :value="props.row.body"
+              copyable
+              boxed
+              sort
+              theme="jv-light"
+            />
           </q-td>
         </q-tr>
       </template>
@@ -79,13 +82,12 @@
         </q-input>
       </template>
     </q-table>
-    <div class="q-pa-lg flex flex-center">
-      <q-pagination v-model="current" :max="5" />
-    </div>
   </q-page>
 </template>
 
 <script>
+import { JsonViewer } from 'vue3-json-viewer';
+import 'vue3-json-viewer/dist/index.css';
 import { ref } from 'vue';
 import { defineComponent } from 'vue';
 import { api } from 'boot/axios';
@@ -131,6 +133,8 @@ export default defineComponent({
         rowsPerPage: 25,
         rowsNumber: 100,
       },
+      loading: true,
+      filter: '',
     };
   },
   name: 'PageIndex',
@@ -142,12 +146,18 @@ export default defineComponent({
   },
   created() {
     api
-      .get('https://ingeni.app/api/?log', {
-        headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
-      })
+      .get(
+        'https://ingeni.app/api/?log&page=' +
+          this.pagination.page +
+          '&limit=' +
+          this.pagination.rowsPerPage,
+        {
+          headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
+        }
+      )
       .then((response) => {
         this.rows = response.data.records;
-        this.initialPagination.rowsNumber = response.data.count;
+        this.pagination.rowsNumber = response.data.count;
       })
       .catch(() => {});
   },

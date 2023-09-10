@@ -76,7 +76,7 @@
 
 <script>
 import JsonViewer from 'vue-json-viewer';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { defineComponent } from 'vue';
 import { api } from 'boot/axios';
 
@@ -116,47 +116,59 @@ export default defineComponent({
     JsonViewer,
   },
   setup() {
-    return {
-      pagination: {
-        sortBy: 'desc',
-        descending: false,
-        page: 1,
-        rowsPerPage: 25,
-        rowsNumber: 100,
-      },
-      loading: false,
-      filter: '',
-      rows: [],
-      columns,
-      name: 'PageIndex',
-    };
-  },
-  mounted() {
-    this.onRequest();
-  },
-  methods: {
-    onRequest() {
+    const rows = ref([]);
+    const filter = ref('');
+    const loading = ref(true);
+
+    const pagination = ref({
+      sortBy: 'desc',
+      descending: false,
+      page: 1,
+      rowsPerPage: 25,
+    });
+
+    function onRequest(props) {
+      const { page, rowsPerPage, sortBy, descending } = pagination.value;
+
       api
         .get(
-          'https://ingeni.app/api/?log&page=' +
-            this.pagination.page +
-            '&limit=' +
-            this.pagination.rowsPerPage,
+          'https://ingeni.app/api/?log&page=' + page + '&limit=' + rowsPerPage,
           {
             headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
           }
         )
         .then((response) => {
-          this.rows = response.data.records;
-          this.pagination.rowsNumber = response.data.count;
-          this.loading = false;
-          console.log(this.rows);
+          rows.value = response.data.records;
+          pagination.value.rowsNumber = response.data.count;
+
+          loading.value = false;
+          console.log(rows);
         })
         .catch((error) => {
           console.error('Error fetching data:', error);
-          this.loading = false; // Ensure loading is turned off in case of an error
+          loading.value = false; // Ensure loading is turned off in case of an error
         });
-    },
+
+      // don't forget to update local pagination object
+      pagination.value.page = page;
+      pagination.value.rowsPerPage = rowsPerPage;
+      pagination.value.sortBy = sortBy;
+      pagination.value.descending = descending;
+    }
+
+    onMounted(() => {
+      onRequest();
+    });
+
+    return {
+      pagination,
+      loading,
+      filter,
+      rows,
+      columns,
+      name: 'PageIndex',
+      onRequest,
+    };
   },
 });
 </script>

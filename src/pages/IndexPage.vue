@@ -53,12 +53,7 @@
             <JsonViewer :value="props.row.headers" copyable sort />
           </q-td>
           <q-td colspan="50%" style="vertical-align: top">
-            <JsonViewer
-              :value="props.row.body"
-              sort
-              expand-depth="4"
-              copyable="{copyText: 'Скопировать', copiedText: 'Скопировано', timeout: 2000}"
-            />
+            <JsonViewer :value="props.row.body" :expand-depth="4" copyable />
           </q-td>
         </q-tr>
       </template>
@@ -80,8 +75,7 @@
 </template>
 
 <script>
-import { JsonViewer } from 'vue3-json-viewer';
-import 'vue3-json-viewer/dist/index.css';
+import JsonViewer from 'vue-json-viewer';
 import { ref } from 'vue';
 import { defineComponent } from 'vue';
 import { api } from 'boot/axios';
@@ -130,33 +124,39 @@ export default defineComponent({
         rowsPerPage: 25,
         rowsNumber: 100,
       },
-      loading: true,
+      loading: false,
       filter: '',
-    };
-  },
-  name: 'PageIndex',
-  data() {
-    return {
       rows: [],
       columns,
+      name: 'PageIndex',
     };
   },
-  created() {
-    api
-      .get(
-        'https://ingeni.app/api/?log&page=' +
-          this.pagination.page +
-          '&limit=' +
-          this.pagination.rowsPerPage,
-        {
-          headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
-        }
-      )
-      .then((response) => {
-        this.rows = response.data.records;
-        this.pagination.rowsNumber = response.data.count;
-      })
-      .catch(() => {});
+  mounted() {
+    this.onRequest();
+  },
+  methods: {
+    onRequest() {
+      api
+        .get(
+          'https://ingeni.app/api/?log&page=' +
+            this.pagination.page +
+            '&limit=' +
+            this.pagination.rowsPerPage,
+          {
+            headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
+          }
+        )
+        .then((response) => {
+          this.rows = response.data.records;
+          this.pagination.rowsNumber = response.data.count;
+          this.loading = false;
+          console.log(this.rows);
+        })
+        .catch((error) => {
+          console.error('Error fetching data:', error);
+          this.loading = false; // Ensure loading is turned off in case of an error
+        });
+    },
   },
 });
 </script>

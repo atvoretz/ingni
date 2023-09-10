@@ -50,16 +50,15 @@
         </q-tr>
         <q-tr v-show="props.row._showDetails">
           <q-td colspan="50%" style="vertical-align: top">
-            <JsonViewer
-              :value="props.row.headers"
-              copyable
-              boxed
-              sort
-              theme="jv-light"
-            />
+            <JsonViewer :value="props.row.headers" copyable sort />
           </q-td>
           <q-td colspan="50%" style="vertical-align: top">
-            <JsonViewer :value="props.row.body" copyable boxed sort />
+            <JsonViewer
+              :value="props.row.body"
+              sort
+              expand-depth="4"
+              copyable="{copyText: 'Скопировать', copiedText: 'Скопировано', timeout: 2000}"
+            />
           </q-td>
         </q-tr>
       </template>

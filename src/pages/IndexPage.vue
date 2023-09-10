@@ -50,21 +50,16 @@
         </q-tr>
         <q-tr v-show="props.row._showDetails">
           <q-td colspan="50%" style="vertical-align: top">
-            <span
-              v-for="(value, name) in props.row.headers"
-              :key="value.valueId"
-            >
-              <b>{{ name }}</b> : {{ value }} <br />
-            </span>
-          </q-td>
-          <q-td colspan="50%" style="vertical-align: top">
             <JsonViewer
-              :value="props.row.body"
+              :value="props.row.headers"
               copyable
               boxed
               sort
               theme="jv-light"
             />
+          </q-td>
+          <q-td colspan="50%" style="vertical-align: top">
+            <JsonViewer :value="props.row.body" copyable boxed sort />
           </q-td>
         </q-tr>
       </template>
@@ -124,6 +119,9 @@ const columns = [
 ];
 
 export default defineComponent({
+  components: {
+    JsonViewer,
+  },
   setup() {
     return {
       pagination: {

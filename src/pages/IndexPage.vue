@@ -127,7 +127,7 @@ export default defineComponent({
       rowsPerPage: 25,
     });
 
-    function onRequest(props) {
+    function onRequest() {
       const { page, rowsPerPage, sortBy, descending } = pagination.value;
 
       api
@@ -148,16 +148,10 @@ export default defineComponent({
           console.error('Error fetching data:', error);
           loading.value = false; // Ensure loading is turned off in case of an error
         });
-
-      // don't forget to update local pagination object
-      pagination.value.page = page;
-      pagination.value.rowsPerPage = rowsPerPage;
-      pagination.value.sortBy = sortBy;
-      pagination.value.descending = descending;
     }
 
     onMounted(() => {
-      onRequest();
+      onRequest(); // Вызывайте onRequest при монтировании компонента
     });
 
     return {
@@ -167,7 +161,7 @@ export default defineComponent({
       rows,
       columns,
       name: 'PageIndex',
-      onRequest,
+      onRequest, // Экспортируйте функцию onRequest
     };
   },
 });

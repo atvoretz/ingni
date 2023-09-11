@@ -2,6 +2,7 @@
   <q-page class="">
     <q-table
       title="Входящие запросы"
+      ref="tableRef"
       :rows="rows"
       :columns="columns"
       row-key="id"
@@ -50,7 +51,7 @@
         </q-tr>
         <q-tr v-show="props.row._showDetails">
           <q-td colspan="50%" style="vertical-align: top">
-            <JsonViewer :value="props.row.headers" copyable sort />
+            <JsonViewer :value="props.row.headers" copyable sort увш />
           </q-td>
           <q-td colspan="50%" style="vertical-align: top">
             <JsonViewer :value="props.row.body" :expand-depth="4" copyable />
@@ -116,6 +117,7 @@ export default defineComponent({
     JsonViewer,
   },
   setup() {
+    const tableRef = ref();
     const rows = ref([]);
     const filter = ref('');
     const loading = ref(true);
@@ -127,8 +129,23 @@ export default defineComponent({
       rowsPerPage: 25,
     });
 
-    function onRequest() {
-      const { page, rowsPerPage, sortBy, descending } = pagination.value;
+    function updatePagination(newPagination) {
+      pagination.value.page = newPagination.page;
+    }
+
+    function onRequest(props) {
+      const { page, rowsPerPage, sortBy, descending } = props.pagination;
+      console.log('onRequest called with:', {
+        page,
+        rowsPerPage,
+        sortBy,
+        descending,
+      });
+      console.log(props);
+
+      // Установите значение page перед выполнением запроса
+      pagination.value.page = page;
+      pagination.value.rowsPerPage = rowsPerPage;
 
       api
         .get(
@@ -140,28 +157,25 @@ export default defineComponent({
         .then((response) => {
           rows.value = response.data.records;
           pagination.value.rowsNumber = response.data.count;
-
-          loading.value = false;
-          console.log(rows);
         })
-        .catch((error) => {
-          console.error('Error fetching data:', error);
-          loading.value = false; // Ensure loading is turned off in case of an error
+        .catch((e) => {
+          console.log(e);
         });
     }
 
     onMounted(() => {
-      onRequest(); // Вызывайте onRequest при монтировании компонента
+      tableRef.value.requestServerInteraction();
     });
 
     return {
+      tableRef,
       pagination,
       loading,
       filter,
       rows,
       columns,
       name: 'PageIndex',
-      onRequest, // Экспортируйте функцию onRequest
+      onRequest,
     };
   },
 });

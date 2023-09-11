@@ -129,10 +129,6 @@ export default defineComponent({
       rowsPerPage: 25,
     });
 
-    function updatePagination(newPagination) {
-      pagination.value.page = newPagination.page;
-    }
-
     function onRequest(props) {
       const { page, rowsPerPage, sortBy, descending } = props.pagination;
       console.log('onRequest called with:', {
@@ -147,6 +143,7 @@ export default defineComponent({
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
 
+      loading.value = true;
       api
         .get(
           'https://ingeni.app/api/?log&page=' + page + '&limit=' + rowsPerPage,
@@ -157,9 +154,11 @@ export default defineComponent({
         .then((response) => {
           rows.value = response.data.records;
           pagination.value.rowsNumber = response.data.count;
+          loading.value = false;
         })
         .catch((e) => {
           console.log(e);
+          loading.value = false;
         });
     }
 

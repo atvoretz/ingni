@@ -12,6 +12,114 @@
       @request="onRequest"
       binary-state-sort
     >
+      <template v-slot:top="props">
+        <q-select
+          outlined
+          v-model="client"
+          :options="clients"
+          option-value="account_id"
+          option-label="account_name"
+          label="Клиенты"
+          emit-value
+          map-options
+          style="min-width: 250px; max-width: 300px"
+          @update:model-value="onRequest(props)"
+        />
+        <q-space />
+        <q-select
+          outlined
+          v-model="log_module"
+          :options="log_modules"
+          label="Модули"
+          option-value="module"
+          option-label="module"
+          emit-value
+          map-options
+          style="min-width: 250px; max-width: 300px"
+          @update:model-value="onRequest(props)"
+        />
+        <q-space />
+        <q-input filled v-model="from" @update:model-value="onRequest(props)">
+          <template v-slot:prepend>
+            <q-icon name="event" class="cursor-pointer">
+              <q-popup-proxy
+                cover
+                transition-show="scale"
+                transition-hide="scale"
+              >
+                <q-date v-model="from" mask="YYYY-MM-DD HH:mm:ss">
+                  <div class="row items-center justify-end">
+                    <q-btn v-close-popup label="Close" color="primary" flat />
+                  </div>
+                </q-date>
+              </q-popup-proxy>
+            </q-icon>
+          </template>
+          <q-space />
+          <template v-slot:append>
+            <q-icon name="access_time" class="cursor-pointer">
+              <q-popup-proxy
+                cover
+                transition-show="scale"
+                transition-hide="scale"
+              >
+                <q-time v-model="from" mask="YYYY-MM-DD HH:mm:ss" format24h>
+                  <div class="row items-center justify-end">
+                    <q-btn v-close-popup label="Close" color="primary" flat />
+                  </div>
+                </q-time>
+              </q-popup-proxy>
+            </q-icon>
+          </template>
+        </q-input>
+        <q-space />
+        <q-input filled v-model="to" @update:model-value="onRequest(props)">
+          <template v-slot:prepend>
+            <q-icon name="event" class="cursor-pointer">
+              <q-popup-proxy
+                cover
+                transition-show="scale"
+                transition-hide="scale"
+              >
+                <q-date v-model="to" mask="YYYY-MM-DD HH:mm:ss">
+                  <div class="row items-center justify-end">
+                    <q-btn v-close-popup label="Close" color="primary" flat />
+                  </div>
+                </q-date>
+              </q-popup-proxy>
+            </q-icon>
+          </template>
+
+          <template v-slot:append>
+            <q-icon name="access_time" class="cursor-pointer">
+              <q-popup-proxy
+                cover
+                transition-show="scale"
+                transition-hide="scale"
+              >
+                <q-time v-model="to" mask="YYYY-MM-DD HH:mm:ss" format24h>
+                  <div class="row items-center justify-end">
+                    <q-btn v-close-popup label="Close" color="primary" flat />
+                  </div>
+                </q-time>
+              </q-popup-proxy>
+            </q-icon>
+          </template>
+        </q-input>
+        <q-space />
+        <!-- <q-input
+          borderless
+          dense
+          debounce="300"
+          color="primary"
+          v-model="filter"
+        >
+          <template v-slot:append>
+            <q-icon name="search" />
+          </template>
+        </q-input> -->
+      </template>
+
       <template v-slot:header="props">
         <q-tr :props="props">
           <q-th
@@ -121,6 +229,12 @@ export default defineComponent({
     const rows = ref([]);
     const filter = ref('');
     const loading = ref(true);
+    const log_modules = ref([]);
+    const log_module = ref(null);
+    const clients = ref([]);
+    const client = ref(null);
+    const from = ref(null);
+    const to = ref(null);
 
     const pagination = ref({
       sortBy: 'desc',
@@ -144,13 +258,33 @@ export default defineComponent({
       pagination.value.rowsPerPage = rowsPerPage;
 
       loading.value = true;
+
+      // Формируем базовый URL запроса
+      let apiUrl =
+        'https://ingeni.app/api/?log&page=' + page + '&limit=' + rowsPerPage;
+
+      // Добавляем параметры client и log_module, если они не пустые
+      if (client.value) {
+        apiUrl += '&client=' + client.value;
+      }
+
+      if (log_module.value) {
+        apiUrl += '&module=' + log_module.value;
+      }
+
+      // Добавляем параметры client и log_module, если они не пустые
+      if (from.value) {
+        apiUrl += '&from=' + from.value;
+      }
+
+      if (to.value) {
+        apiUrl += '&to=' + to.value;
+      }
+
       api
-        .get(
-          'https://ingeni.app/api/?log&page=' + page + '&limit=' + rowsPerPage,
-          {
-            headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
-          }
-        )
+        .get(apiUrl, {
+          headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
+        })
         .then((response) => {
           rows.value = response.data.records;
           pagination.value.rowsNumber = response.data.count;
@@ -159,6 +293,42 @@ export default defineComponent({
         .catch((e) => {
           console.log(e);
           loading.value = false;
+        });
+
+      // Формируем базовый URL запроса
+      let ApiUrlLog = 'https://ingeni.app/api/?log_modules';
+
+      // Добавляем параметры client и log_module, если они не пустые
+      if (client.value) {
+        ApiUrlLog += '&client=' + client.value;
+      }
+
+      api
+        .get(ApiUrlLog, {
+          headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
+        })
+        .then((response) => {
+          log_modules.value = response.data.records;
+          // pagination.value.rowsNumber = response.data.count;
+          // loading.value = false;
+        })
+        .catch((e) => {
+          console.log(e);
+          // loading.value = false;
+        });
+
+      api
+        .get('https://ingeni.app/api/?clients', {
+          headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
+        })
+        .then((response) => {
+          clients.value = response.data.records;
+          // pagination.value.rowsNumber = response.data.count;
+          // loading.value = false;
+        })
+        .catch((e) => {
+          console.log(e);
+          // loading.value = false;
         });
     }
 
@@ -172,6 +342,12 @@ export default defineComponent({
       loading,
       filter,
       rows,
+      log_modules,
+      log_module,
+      clients,
+      client,
+      from,
+      to,
       columns,
       name: 'PageIndex',
       onRequest,

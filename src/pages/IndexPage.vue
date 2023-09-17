@@ -15,6 +15,7 @@
       <template v-slot:top="props">
         <q-select
           outlined
+          clearable
           v-model="client"
           :options="clients"
           option-value="account_id"
@@ -28,6 +29,7 @@
         <q-space />
         <q-select
           outlined
+          clearable
           v-model="log_module"
           :options="log_modules"
           label="Модули"
@@ -39,7 +41,12 @@
           @update:model-value="onRequest(props)"
         />
         <q-space />
-        <q-input filled v-model="from" @update:model-value="onRequest(props)">
+        <q-input
+          outlined
+          clearable
+          v-model="from"
+          @update:model-value="onRequest(props)"
+        >
           <template v-slot:prepend>
             <q-icon name="event" class="cursor-pointer">
               <q-popup-proxy
@@ -47,7 +54,11 @@
                 transition-show="scale"
                 transition-hide="scale"
               >
-                <q-date v-model="from" mask="YYYY-MM-DD HH:mm:ss">
+                <q-date
+                  v-model="from"
+                  mask="YYYY-MM-DD HH:mm:ss"
+                  @update:model-value="onRequest(props)"
+                >
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -63,7 +74,12 @@
                 transition-show="scale"
                 transition-hide="scale"
               >
-                <q-time v-model="from" mask="YYYY-MM-DD HH:mm:ss" format24h>
+                <q-time
+                  v-model="from"
+                  mask="YYYY-MM-DD HH:mm:ss"
+                  format24h
+                  @update:model-value="onRequest(props)"
+                >
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -73,7 +89,12 @@
           </template>
         </q-input>
         <q-space />
-        <q-input filled v-model="to" @update:model-value="onRequest(props)">
+        <q-input
+          outlined
+          clearable
+          v-model="to"
+          @update:model-value="onRequest(props)"
+        >
           <template v-slot:prepend>
             <q-icon name="event" class="cursor-pointer">
               <q-popup-proxy
@@ -81,7 +102,11 @@
                 transition-show="scale"
                 transition-hide="scale"
               >
-                <q-date v-model="to" mask="YYYY-MM-DD HH:mm:ss">
+                <q-date
+                  v-model="to"
+                  mask="YYYY-MM-DD HH:mm:ss"
+                  @update:model-value="onRequest(props)"
+                >
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -97,7 +122,12 @@
                 transition-show="scale"
                 transition-hide="scale"
               >
-                <q-time v-model="to" mask="YYYY-MM-DD HH:mm:ss" format24h>
+                <q-time
+                  v-model="to"
+                  mask="YYYY-MM-DD HH:mm:ss"
+                  format24h
+                  @update:model-value="onRequest(props)"
+                >
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>

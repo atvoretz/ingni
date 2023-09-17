@@ -19,11 +19,11 @@
           v-model="client"
           :options="clients"
           option-value="account_id"
-          option-label="account_name"
+          option-label="clients_for_select"
           label="Клиенты"
           emit-value
           map-options
-          style="min-width: 250px; max-width: 300px"
+          style="min-width: 250px"
           @update:model-value="onRequest(props)"
         />
         <q-space />
@@ -37,7 +37,7 @@
           option-label="module"
           emit-value
           map-options
-          style="min-width: 250px; max-width: 300px"
+          style="min-width: 250px"
           @update:model-value="onRequest(props)"
         />
         <q-space />

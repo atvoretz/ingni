@@ -189,7 +189,7 @@
         </q-tr>
         <q-tr v-show="props.row._showDetails">
           <q-td colspan="50%" style="vertical-align: top">
-            <JsonViewer :value="props.row.headers" copyable sort увш />
+            <JsonViewer :value="props.row.headers" copyable sort />
           </q-td>
           <q-td colspan="50%" style="vertical-align: top">
             <JsonViewer :value="props.row.body" :expand-depth="4" copyable />

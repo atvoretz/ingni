@@ -232,21 +232,18 @@ const columns = [
     align: 'left',
     label: 'Название аккаунта',
     field: 'account_name',
-    sortable: true,
   },
   {
     name: 'module',
     align: 'left',
     label: 'Модуль',
     field: 'module',
-    sortable: true,
   },
   {
     name: 'code',
     align: 'left',
     label: 'Код ответа',
     field: 'code',
-    sortable: true,
   },
 ];
 

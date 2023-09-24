@@ -176,8 +176,8 @@
           <q-td key="code" :props="props" class="fixed-td">
             <span
               :class="{
-                'red-text': props.row.code.charAt(0) !== '2',
-                'green-text': props.row.code.charAt(0) === '2',
+                'red-text': !/^2\d{2}$/.test(props.row.code),
+                'green-text': /^2\d{2}$/.test(props.row.code),
               }"
             >
               {{ props.row.code }}
@@ -387,7 +387,7 @@ export default defineComponent({
 .fixed-td {
   width: 20%; /* Равномерное распределение на 4 колонки */
   overflow: hidden; /* Обрезание текста, если он не помещается */
-  word-wrap: break-word;
+  white-space: normal;
   text-overflow: ellipsis; /* Вывод многоточия, если текст обрезается */
 }
 

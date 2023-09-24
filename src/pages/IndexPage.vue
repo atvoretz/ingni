@@ -60,7 +60,7 @@
                   @update:model-value="onRequest(props)"
                 >
                   <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Close" color="primary" flat />
+                    <q-btn v-close-popup label="Закрыть" color="primary" flat />
                   </div>
                 </q-date>
               </q-popup-proxy>
@@ -81,7 +81,7 @@
                   @update:model-value="onRequest(props)"
                 >
                   <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Close" color="primary" flat />
+                    <q-btn v-close-popup label="Закрыть" color="primary" flat />
                   </div>
                 </q-time>
               </q-popup-proxy>
@@ -108,7 +108,7 @@
                   @update:model-value="onRequest(props)"
                 >
                   <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Close" color="primary" flat />
+                    <q-btn v-close-popup label="Закрыть" color="primary" flat />
                   </div>
                 </q-date>
               </q-popup-proxy>
@@ -129,7 +129,7 @@
                   @update:model-value="onRequest(props)"
                 >
                   <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Close" color="primary" flat />
+                    <q-btn v-close-popup label="Закрыть" color="primary" flat />
                   </div>
                 </q-time>
               </q-popup-proxy>
@@ -156,7 +156,7 @@
             v-for="col in props.cols"
             :key="col.name"
             :props="props"
-            colspan="25%"
+            class="fixed-td"
           >
             <b>{{ col.label }}</b>
           </q-th>
@@ -164,18 +164,25 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td key="date_time" :props="props" colspan="25%">
+          <q-td key="date_time" :props="props" class="fixed-td">
             {{ props.row.date_time }}
             <q-badge color="info">{{ props.row.v_machine }}</q-badge>
           </q-td>
-          <q-td key="account_name" :props="props" colspan="25%">
+          <q-td key="account_name" :props="props" class="fixed-td">
             {{ props.row.account_name }}
           </q-td>
-          <q-td key="module" :props="props" colspan="25%">
+          <q-td key="module" :props="props" class="fixed-td">
             {{ props.row.module }}
           </q-td>
-          <q-td key="code" :props="props" colspan="25%">
-            {{ props.row.code }}
+          <q-td key="code" :props="props" class="fixed-td">
+            <span
+              :class="{
+                'red-text': props.row.code.charAt(0) !== '2',
+                'green-text': props.row.code.charAt(0) === '2',
+              }"
+            >
+              {{ props.row.code }}
+            </span>
             <q-icon
               size="sm"
               @click="props.row._showDetails = !props.row._showDetails"
@@ -188,10 +195,10 @@
           </q-td>
         </q-tr>
         <q-tr v-show="props.row._showDetails">
-          <q-td colspan="50%" style="vertical-align: top">
+          <q-td colspan="2" class="fixed-td-n" style="vertical-align: top">
             <JsonViewer :value="props.row.headers" copyable sort />
           </q-td>
-          <q-td colspan="50%" style="vertical-align: top">
+          <q-td colspan="2" class="fixed-td-n" style="vertical-align: top">
             <JsonViewer :value="props.row.body" :expand-depth="4" copyable />
           </q-td>
         </q-tr>
@@ -382,3 +389,34 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.fixed-table {
+  table-layout: fixed; /* Фиксированный размер таблицы */
+  width: 100%; /* Ширина таблицы 100% */
+}
+
+.fixed-td {
+  width: 25%; /* Равномерное распределение на 4 колонки */
+  white-space: nowrap; /* Запрет переноса текста */
+  overflow: hidden; /* Обрезание текста, если он не помещается */
+  text-overflow: ellipsis; /* Вывод многоточия, если текст обрезается */
+}
+
+.fixed-td-n {
+  max-width: 50%; /* Максимальная ширина вложенных строк */
+  white-space: nowrap; /* Запрет переноса текста */
+  overflow: hidden; /* Обрезание текста, если он не помещается */
+  text-overflow: ellipsis; /* Вывод многоточия, если текст обрезается */
+}
+/* Добавьте стили для красного текста и жирного шрифта */
+.red-text {
+  color: red;
+  font-weight: bold; /* Добавление жирного шрифта */
+}
+
+.green-text {
+  color: green;
+  font-weight: bold;
+}
+</style>

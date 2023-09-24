@@ -93,9 +93,7 @@ const columns = [
 ];
 
 export default defineComponent({
-  components: {
-    JsonViewer,
-  },
+  components: {},
   setup() {
     const tableRef = ref();
     const rows = ref([]);

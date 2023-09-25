@@ -43,7 +43,7 @@
               >
 
               <q-badge
-                color="black"
+                color="grey"
                 v-if="props.row.sipuni_secret !== null"
                 transparent
               >

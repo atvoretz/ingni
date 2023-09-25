@@ -1,7 +1,7 @@
 <template>
-  <q-page class="">
+  <q-page class="text-body2">
     <q-table
-      title="Входящие запросы"
+      title="Аккаунты клиентов"
       ref="tableRef"
       :rows="rows"
       :columns="columns"
@@ -14,30 +14,51 @@
     >
       <template v-slot:header="props">
         <q-tr :props="props">
-          <q-th
-            v-for="col in props.cols"
-            :key="col.name"
-            :props="props"
-            colspan="25%"
-          >
+          <q-th v-for="col in props.cols" :key="col.name" :props="props">
             <b>{{ col.label }}</b>
           </q-th>
         </q-tr>
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td key="date_time" :props="props" colspan="25%">
-            {{ props.row.date_time }}
-            <q-badge color="info">{{ props.row.v_machine }}</q-badge>
+          <q-td key="id" :props="props">
+            {{ props.row.id }}
           </q-td>
-          <q-td key="account_name" :props="props" colspan="25%">
-            {{ props.row.account_name }}
+          <q-td key="account_id" :props="props">
+            {{ props.row.account_id }}
           </q-td>
-          <q-td key="module" :props="props" colspan="25%">
-            {{ props.row.module }}
+          <q-td key="account_name" :props="props">
+            <div class="q-pa-md q-gutter-sm">
+              {{ props.row.account_name }}
+              <q-badge color="info" transparent>
+                v{{ props.row.amo_version }}</q-badge
+              >
+
+              <q-badge
+                v-if="props.row.sipuni_account_id !== null"
+                color="blue"
+                transparent
+              >
+                Sipuni</q-badge
+              >
+
+              <q-badge
+                color="black"
+                v-if="props.row.sipuni_secret !== null"
+                transparent
+              >
+                Готово для индикатора</q-badge
+              >
+            </div>
           </q-td>
-          <q-td key="code" :props="props" colspan="25%">
-            {{ props.row.code }}
+          <q-td key="last_auth_date" :props="props">
+            {{ props.row.last_auth_date }}
+          </q-td>
+          <q-td key="last_error_date" :props="props">
+            {{ props.row.last_auth_date }}
+          </q-td>
+          <q-td key="expires" :props="props">
+            {{ props.row.last_auth_date }}
           </q-td>
         </q-tr>
       </template>
@@ -47,7 +68,7 @@
           dense
           debounce="300"
           v-model="filter"
-          placeholder="Search"
+          placeholder="Поиск"
         >
           <template v-slot:append>
             <q-icon name="search" />
@@ -66,11 +87,17 @@ import { api } from 'boot/axios';
 
 const columns = [
   {
-    name: 'date_time',
+    name: 'id',
     align: 'left',
-    label: 'Период',
-    field: 'period',
+    label: '#',
+    field: 'id',
     sortable: true,
+  },
+  {
+    name: 'account_id',
+    align: 'left',
+    label: '№ клиента',
+    field: 'account_id',
   },
   {
     name: 'account_name',
@@ -79,16 +106,22 @@ const columns = [
     field: 'account_name',
   },
   {
-    name: 'module',
+    name: 'last_auth_date',
     align: 'left',
-    label: 'Модуль',
-    field: 'module',
+    label: 'Последняя авторизация',
+    field: 'last_auth_date',
   },
   {
-    name: 'code',
+    name: 'last_error_date',
     align: 'left',
-    label: 'Код ответа',
-    field: 'code',
+    label: 'Последняя ошибка',
+    field: 'last_error_date',
+  },
+  {
+    name: 'expires',
+    align: 'left',
+    label: 'Срок действия токена',
+    field: 'expires',
   },
 ];
 
@@ -131,7 +164,10 @@ export default defineComponent({
 
       // Формируем базовый URL запроса
       let apiUrl =
-        'https://ingeni.app/api/?log&page=' + page + '&limit=' + rowsPerPage;
+        'https://ingeni.app/api/?clients&page=' +
+        page +
+        '&limit=' +
+        rowsPerPage;
 
       // Добавляем параметры client и log_module, если они не пустые
       if (client.value) {
@@ -225,3 +261,16 @@ export default defineComponent({
   },
 });
 </script>
+<style scoped>
+.fixed-table {
+  table-layout: fixed; /* Фиксированный размер таблицы */
+  width: 100%; /* Ширина таблицы 100% */
+}
+
+.fixed-td {
+  width: 25%; /* Равномерное распределение на 4 колонки */
+  white-space: nowrap; /* Запрет переноса текста */
+  overflow: hidden; /* Обрезание текста, если он не помещается */
+  text-overflow: ellipsis; /* Вывод многоточия, если текст обрезается */
+}
+</style>

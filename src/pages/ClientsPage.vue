@@ -21,6 +21,18 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
+          <q-td key="actions" :props="props">
+            <q-btn icon="more_vert" round flat>
+              <q-menu fit anchor="bottom start" self="center left">
+                <q-item clickable>
+                  <q-item-section>New tab</q-item-section>
+                </q-item>
+                <q-item clickable>
+                  <q-item-section>New incognito tab</q-item-section>
+                </q-item>
+              </q-menu>
+            </q-btn>
+          </q-td>
           <q-td key="id" :props="props">
             {{ props.row.id }}
           </q-td>
@@ -86,6 +98,13 @@ import { defineComponent } from 'vue';
 import { api } from 'boot/axios';
 
 const columns = [
+  {
+    name: 'actions',
+    align: 'left',
+    label: '',
+    field: 'actions',
+    sortable: true,
+  },
   {
     name: 'id',
     align: 'left',

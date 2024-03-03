@@ -25,6 +25,7 @@
           map-options
           style="min-width: 250px"
           @update:model-value="onRequest(props)"
+          dense
         />
         <q-space />
         <q-select
@@ -39,6 +40,7 @@
           map-options
           style="min-width: 250px"
           @update:model-value="onRequest(props)"
+          dense
         />
         <q-space />
         <q-input
@@ -53,14 +55,22 @@
                 cover
                 transition-show="scale"
                 transition-hide="scale"
+                dense
               >
                 <q-date
                   v-model="from"
                   mask="YYYY-MM-DD HH:mm:ss"
                   @update:model-value="onRequest(props)"
+                  dense
                 >
                   <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Закрыть" color="primary" flat />
+                    <q-btn
+                      v-close-popup
+                      label="Закрыть"
+                      color="primary"
+                      flat
+                      dense
+                    />
                   </div>
                 </q-date>
               </q-popup-proxy>

@@ -169,6 +169,12 @@
                 </template>
               </q-input>
             </div>
+            <div class="col-12 col-md-6 col-lg-3 q-pa-xs">
+              <q-toggle
+                @update:model-value="autoRefresh"
+                label="Автообновление"
+              ></q-toggle>
+            </div>
           </div>
         </div>
       </template>
@@ -178,7 +184,7 @@
             v-for="col in props.cols"
             :key="col.name"
             :props="props"
-            class="fixed-td"
+            :class="col.colWidth"
           >
             <b>{{ col.label }}</b>
           </q-th>
@@ -186,7 +192,18 @@
       </template>
       <!-- Vue template -->
       <template v-slot:body="props">
-        <q-tr v-if="$q.screen.gt.xs" :props="props">
+        <q-tr
+          v-if="$q.screen.gt.xs"
+          :props="props"
+          :class="{ 'highlighted-row': props.row._isNew }"
+        >
+          <q-td key="rowNumber" :props="props" class="fixed-td-number">
+            {{
+              props.rowIndex +
+              1 +
+              (pagination.page - 1) * pagination.rowsPerPage
+            }}
+          </q-td>
           <q-td key="date_time" :props="props" class="fixed-td">
             {{ props.row.date_time }}
             <q-badge color="info">{{ props.row.v_machine }}</q-badge>
@@ -218,6 +235,7 @@
           </q-td>
         </q-tr>
         <q-tr v-if="$q.screen.gt.xs" v-show="props.row._showDetails">
+          <q-td colspan="1"></q-td>
           <q-td colspan="2" class="fixed-td-n" style="vertical-align: top">
             <JsonViewer :value="props.row.headers" copyable sort />
           </q-td>
@@ -229,6 +247,14 @@
         <q-tr v-if="!$q.screen.gt.xs" :props="props">
           <q-td class="q-pa-none" colspan="100%">
             <div class="q-pa-sm">
+              <div>
+                {{
+                  props.rowIndex +
+                  1 +
+                  (pagination.page - 1) * pagination.rowsPerPage
+                }}
+              </div>
+
               <div>
                 <strong>Дата и время:</strong> {{ props.row.date_time }}
               </div>
@@ -303,35 +329,47 @@
 
 <script>
 import JsonViewer from 'vue-json-viewer';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch, onUnmounted } from 'vue';
 import { defineComponent } from 'vue';
 import { api } from 'boot/axios';
 
 const columns = [
+  {
+    name: 'rowNumber',
+    align: 'left',
+    label: '#',
+    field: 'rowNumber',
+    sortable: true,
+    colWidth: 'fixed-td-number',
+  },
   {
     name: 'date_time',
     align: 'left',
     label: 'Период',
     field: 'period',
     sortable: true,
+    colWidth: 'fixed-td',
   },
   {
     name: 'account_name',
     align: 'left',
     label: 'Название аккаунта',
     field: 'account_name',
+    colWidth: 'fixed-td',
   },
   {
     name: 'module',
     align: 'left',
     label: 'Модуль',
     field: 'module',
+    colWidth: 'fixed-td',
   },
   {
     name: 'code',
     align: 'left',
     label: 'Код ответа',
     field: 'code',
+    colWidth: 'fixed-td',
   },
 ];
 
@@ -350,6 +388,9 @@ export default defineComponent({
     const client = ref(null);
     const from = ref(null);
     const to = ref(null);
+    const previousRows = ref([]);
+    const autoRefresh = ref(false);
+    const autoRefreshInterval = ref(null);
 
     const pagination = ref({
       sortBy: 'desc',
@@ -384,19 +425,42 @@ export default defineComponent({
           headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
         })
         .then((response) => {
-          rows.value = response.data.records;
+          const newRows = response.data.records;
+
+          // Сравниваем каждую новую строку со списком предыдущих строк
+          newRows.forEach((newRow) => {
+            const isNewRow = !previousRows.value.some(
+              (previousRow) => previousRow.id === newRow.id
+            );
+            newRow._isNew = isNewRow; // Прямое присваивание для Vue 3
+          });
+
+          // Обновляем текущий набор строк интерфейса
+          rows.value = newRows;
+
+          // Сохраняем копию новых строк как предыдущие для следующего сравнения
+          previousRows.value = newRows.map((row) => ({ ...row }));
+
           pagination.value.rowsNumber = response.data.count;
         });
 
+      let logModulesApiUrl = 'https://ingeni.app/api/?log_modules';
+
+      // Добавляем параметры к URL в зависимости от наличия значений в переменных
+      if (client.value) {
+        logModulesApiUrl += `&client=${client.value}`;
+      }
+      if (from.value) {
+        logModulesApiUrl += `&from=${from.value}`;
+      }
+      if (to.value) {
+        logModulesApiUrl += `&to=${to.value}`;
+      }
+
       const logModulesRequest = api
-        .get(
-          `https://ingeni.app/api/?log_modules${
-            client.value ? '&client=' + client.value : ''
-          }`,
-          {
-            headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
-          }
-        )
+        .get(logModulesApiUrl, {
+          headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
+        })
         .then((response) => {
           log_modules.value = response.data.records;
         });
@@ -423,6 +487,25 @@ export default defineComponent({
       tableRef.value.requestServerInteraction();
     });
 
+    watch(autoRefresh, (newValue) => {
+      // Очистка существующего интервала при любом изменении autoRefresh
+      if (autoRefreshInterval.value) {
+        clearInterval(autoRefreshInterval.value);
+        autoRefreshInterval.value = null; // Если используется ref
+      }
+
+      if (newValue) {
+        onRequest(); // Немедленно выполнить запрос
+        autoRefreshInterval.value = setInterval(() => {
+          onRequest(); // Повторный запрос каждые X миллисекунд
+        }, 10000); // Например, каждые 10 секунд
+      }
+    });
+
+    onUnmounted(() => {
+      if (autoRefreshInterval.value) clearInterval(autoRefreshInterval.value);
+    });
+
     return {
       tableRef,
       pagination,
@@ -438,6 +521,8 @@ export default defineComponent({
       columns,
       name: 'PageIndex',
       onRequest,
+      autoRefresh,
+      autoRefreshInterval,
     };
   },
 });
@@ -456,8 +541,22 @@ export default defineComponent({
   }
 }
 
+.fixed-td-number {
+  width: 4%; /* Равномерное распределение на 4 колонки */
+  white-space: nowrap; /* Запрет переноса текста */
+  overflow: hidden; /* Обрезание текста, если он не помещается */
+  text-overflow: ellipsis; /* Вывод многоточия, если текст обрезается */
+}
+
 .fixed-td {
-  width: 25%; /* Равномерное распределение на 4 колонки */
+  width: 24%; /* Равномерное распределение на 4 колонки */
+  white-space: nowrap; /* Запрет переноса текста */
+  overflow: hidden; /* Обрезание текста, если он не помещается */
+  text-overflow: ellipsis; /* Вывод многоточия, если текст обрезается */
+}
+
+.fixed-td-n {
+  width: 48%; /* Равномерное распределение на 4 колонки */
   white-space: nowrap; /* Запрет переноса текста */
   overflow: hidden; /* Обрезание текста, если он не помещается */
   text-overflow: ellipsis; /* Вывод многоточия, если текст обрезается */
@@ -484,5 +583,18 @@ export default defineComponent({
   justify-content: center; /* Горизонтальное центрирование содержимого */
   align-items: center; /* Вертикальное центрирование содержимого */
   z-index: 10000; /* Убедитесь, что контейнер находится поверх других элементов */
+}
+
+.highlighted-row {
+  animation: highlight-row 5s forwards;
+}
+
+@keyframes highlight-row {
+  0% {
+    background-color: yellow;
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 </style>

@@ -7,17 +7,9 @@
       :columns="columns"
       row-key="id"
       v-model:pagination="pagination"
-      :loading="loading"
       @request="onRequest"
       binary-state-sort
     >
-      <template v-slot:loading>
-        <div class="text-center q-pa-md">
-          <q-spinner color="primary" size="3em" />
-          <!-- Кастомный спиннер -->
-        </div>
-      </template>
-
       <template v-slot:top="props">
         <div class="q-gutter-md" style="width: 100%">
           <div class="row items-center">
@@ -298,6 +290,14 @@
         </q-input>
       </template>
     </q-table>
+    <q-inner-loading
+      :showing="loading"
+      label="Спрашиваю в базе..."
+      label-class="text-primary"
+      label-style="font-size: 1.1em"
+      color="primary"
+      class="fixed-loading-container"
+    />
   </q-page>
 </template>
 
@@ -456,11 +456,6 @@ export default defineComponent({
   }
 }
 
-.fixed-table {
-  table-layout: fixed; /* Фиксированный размер таблицы */
-  width: 100%; /* Ширина таблицы 100% */
-}
-
 .fixed-td {
   width: 25%; /* Равномерное распределение на 4 колонки */
   white-space: nowrap; /* Запрет переноса текста */
@@ -468,12 +463,6 @@ export default defineComponent({
   text-overflow: ellipsis; /* Вывод многоточия, если текст обрезается */
 }
 
-.fixed-td-n {
-  max-width: 50%; /* Максимальная ширина вложенных строк */
-  white-space: nowrap; /* Запрет переноса текста */
-  overflow: hidden; /* Обрезание текста, если он не помещается */
-  text-overflow: ellipsis; /* Вывод многоточия, если текст обрезается */
-}
 /* Добавьте стили для красного текста и жирного шрифта */
 .red-text {
   color: red;
@@ -483,5 +472,17 @@ export default defineComponent({
 .green-text {
   color: green;
   font-weight: bold;
+}
+
+.fixed-loading-container {
+  position: fixed; /* Фиксированное позиционирование относительно окна браузера */
+  top: 0;
+  left: 0;
+  width: 100vw; /* Ширина равна 100% от ширины вьюпорта */
+  height: 100vh; /* Высота равна 100% от высоты вьюпорта */
+  display: flex;
+  justify-content: center; /* Горизонтальное центрирование содержимого */
+  align-items: center; /* Вертикальное центрирование содержимого */
+  z-index: 10000; /* Убедитесь, что контейнер находится поверх других элементов */
 }
 </style>

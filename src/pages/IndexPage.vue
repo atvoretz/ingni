@@ -388,26 +388,10 @@ export default defineComponent({
     const today = new Date();
 
     // Начало дня по московскому времени
-    const first_from = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+    const from = new Date(today.setHours(0, 0, 0, 0)).toISOString();
 
     // Конец дня по московскому времени
-    const first_to = new Date(today.setHours(23, 59, 59, 999)).toISOString();
-
-    const moscowTimezone = 'Europe/Moscow';
-    const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
-      timeZone: moscowTimezone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
-
-    // Пример форматирования
-    const from = dateFormatter.format(new Date(from)).replace(/\//g, '-');
-    const to = dateFormatter.format(new Date(to)).replace(/\//g, '-');
+    const to = new Date(today.setHours(23, 59, 59, 999)).toISOString();
 
     const previousRows = ref([]);
     const autoRefresh = ref(false);
@@ -459,8 +443,10 @@ export default defineComponent({
           // Обновляем текущий набор строк интерфейса
           rows.value = newRows;
 
-          // Сохраняем копию новых строк как предыдущие для следующего сравнения
-          previousRows.value = newRows.map((row) => ({ ...row }));
+          // Задержка перед обновлением списка старых строк
+          setTimeout(() => {
+            previousRows.value = newRows.map((row) => ({ ...row }));
+          }, 8000); // Задержка в 5000 мс (5 секунд)
 
           pagination.value.rowsNumber = response.data.count;
         });
@@ -628,7 +614,7 @@ export default defineComponent({
 }
 
 .highlighted-row {
-  animation: highlight-row 5s forwards;
+  animation: highlight-row 8s forwards;
 }
 
 @keyframes highlight-row {

@@ -170,10 +170,7 @@
               </q-input>
             </div>
             <div class="col-12 col-md-6 col-lg-3 q-pa-xs">
-              <q-toggle
-                @update:model-value="autoRefresh"
-                label="Автообновление"
-              ></q-toggle>
+              <q-toggle v-model="autoRefresh" label="Автообновление"></q-toggle>
             </div>
           </div>
         </div>
@@ -329,7 +326,7 @@
 
 <script>
 import JsonViewer from 'vue-json-viewer';
-import { ref, onMounted, watch, onUnmounted } from 'vue';
+import { ref, onMounted, watch, watchEffect, onUnmounted } from 'vue';
 import { defineComponent } from 'vue';
 import { api } from 'boot/axios';
 
@@ -386,8 +383,32 @@ export default defineComponent({
     const log_module = ref(null);
     const clients = ref([]);
     const client = ref(null);
-    const from = ref(null);
-    const to = ref(null);
+
+    // Текущая дата
+    const today = new Date();
+
+    // Начало дня по московскому времени
+    const first_from = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+
+    // Конец дня по московскому времени
+    const first_to = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+
+    const moscowTimezone = 'Europe/Moscow';
+    const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
+      timeZone: moscowTimezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+
+    // Пример форматирования
+    const from = dateFormatter.format(new Date(from)).replace(/\//g, '-');
+    const to = dateFormatter.format(new Date(to)).replace(/\//g, '-');
+
     const previousRows = ref([]);
     const autoRefresh = ref(false);
     const autoRefreshInterval = ref(null);
@@ -399,10 +420,10 @@ export default defineComponent({
       rowsPerPage: 25,
     });
 
-    function onRequest(props) {
+    function onRequest() {
       loading.value = true; // Показываем спиннер перед запросами
 
-      const { page, rowsPerPage, sortBy, descending } = props.pagination;
+      const { page, rowsPerPage, sortBy, descending } = pagination.value;
       console.log('onRequest called with:', {
         page,
         rowsPerPage,
@@ -430,7 +451,7 @@ export default defineComponent({
           // Сравниваем каждую новую строку со списком предыдущих строк
           newRows.forEach((newRow) => {
             const isNewRow = !previousRows.value.some(
-              (previousRow) => previousRow.id === newRow.id
+              (previousRow) => previousRow.log_id === newRow.log_id
             );
             newRow._isNew = isNewRow; // Прямое присваивание для Vue 3
           });
@@ -485,6 +506,27 @@ export default defineComponent({
 
     onMounted(() => {
       tableRef.value.requestServerInteraction();
+    });
+
+    watchEffect(async () => {
+      try {
+        // Очищаем интервал при каждом изменении autoRefresh или компонента размонтируется
+        if (autoRefreshInterval.value) {
+          clearInterval(autoRefreshInterval.value);
+          autoRefreshInterval.value = null;
+        }
+
+        if (autoRefresh.value) {
+          onRequest(); // Вызываем немедленно, если autoRefresh активирован
+          // Устанавливаем интервал для периодического вызова
+          autoRefreshInterval.value = setInterval(onRequest, 10000);
+        }
+      } catch (error) {
+        console.error(
+          'Ошибка при выполнении асинхронной операции в watchEffect:',
+          error
+        );
+      }
     });
 
     watch(autoRefresh, (newValue) => {

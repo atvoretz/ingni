@@ -77,19 +77,14 @@
 
         <q-separator spaced />
 
-        <q-item
-          dense
-          v-for="link in essentialLinks"
-          :key="link.title"
-          clickable
-        >
+        <q-item dense v-for="link in Mainlinks" :key="link.title" clickable>
           <q-item-section avatar>
-            <q-icon :name="link.icon" />
+            <q-icon :name="link.icon" color="primary" />
           </q-item-section>
 
           <q-item-section>
             <q-item-label lines="1">{{ link.title }}</q-item-label>
-            <q-item-label caption lines="1">{{ link.caption }}</q-item-label>
+            <q-item-label caption lines="3">{{ link.caption }}</q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
@@ -105,6 +100,42 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
+
+const MainlinksList = [
+  {
+    title: 'Админка',
+    caption:
+      'Журнал всех запросов, Журнал пойманных ошибок, Журнал ошибок сервера, Аккаунты клиентов',
+    icon: 'admin_panel_settings',
+    link: '/',
+  },
+  {
+    title: 'Распределятор',
+    caption: 'Управление распределением заявок, Журнал распределенных заявок',
+    icon: 'groups',
+    link: '/',
+  },
+  {
+    title: 'Уведомлятор',
+    caption: 'Модуль уведомлений в телеграмм и на e-mail (через sendpulse*)',
+    icon: 'notifications',
+    link: '/server_errors',
+  },
+  {
+    title: 'Отчетер',
+    caption:
+      'Модуль отчетов по данным из отчета список событий amoCRM в телеграм',
+    icon: 'summarize',
+    link: '/server_errors',
+  },
+  {
+    title: 'Выгружатор',
+    caption:
+      'Модуль выгрузки в бота в телеграм, модуль выгрузки из amoCRM в БД для работы с отчётами в конструкторах (Yandex Datalens)',
+    icon: 'account_tree',
+    link: '/server_errors',
+  },
+];
 
 const linksList = [
   {
@@ -143,6 +174,7 @@ export default defineComponent({
     const $q = useQuasar();
     const tab = ref('');
     const essentialLinks = ref(linksList); // Объявляем как реактивное свойство
+    const Mainlinks = ref(MainlinksList); // Объявляем как реактивное свойство
     const router = useRouter(); // Получаем доступ к экземпляру роутера
 
     const toggleDarkMode = () => {
@@ -181,6 +213,7 @@ export default defineComponent({
       toggleDarkMode,
       tab,
       essentialLinks,
+      Mainlinks,
       handleTabClick,
     };
   },

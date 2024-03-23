@@ -8,10 +8,16 @@
       row-key="id"
       v-model:pagination="pagination"
       :loading="loading"
-      :filter="filter"
       @request="onRequest"
       binary-state-sort
     >
+      <template v-slot:loading>
+        <div class="text-center q-pa-md">
+          <q-spinner color="primary" size="3em" />
+          <!-- Кастомный спиннер -->
+        </div>
+      </template>
+
       <template v-slot:top="props">
         <div class="q-gutter-md" style="width: 100%">
           <div class="row items-center">
@@ -353,6 +359,8 @@ export default defineComponent({
     });
 
     function onRequest(props) {
+      loading.value = true; // Показываем спиннер перед запросами
+
       const { page, rowsPerPage, sortBy, descending } = props.pagination;
       console.log('onRequest called with:', {
         page,
@@ -360,84 +368,54 @@ export default defineComponent({
         sortBy,
         descending,
       });
-      console.log(props);
 
-      // Установите значение page перед выполнением запроса
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
 
-      loading.value = true;
+      // Формируем URL для основного запроса данных
+      let apiUrl = `https://ingeni.app/api/?log&page=${page}&limit=${rowsPerPage}`;
+      apiUrl += client.value ? `&client=${client.value}` : '';
+      apiUrl += log_module.value ? `&module=${log_module.value}` : '';
+      apiUrl += from.value ? `&from=${from.value}` : '';
+      apiUrl += to.value ? `&to=${to.value}` : '';
 
-      // Формируем базовый URL запроса
-      let apiUrl =
-        'https://ingeni.app/api/?log&page=' + page + '&limit=' + rowsPerPage;
-
-      // Добавляем параметры client и log_module, если они не пустые
-      if (client.value) {
-        apiUrl += '&client=' + client.value;
-      }
-
-      if (log_module.value) {
-        apiUrl += '&module=' + log_module.value;
-      }
-
-      // Добавляем параметры client и log_module, если они не пустые
-      if (from.value) {
-        apiUrl += '&from=' + from.value;
-      }
-
-      if (to.value) {
-        apiUrl += '&to=' + to.value;
-      }
-
-      api
+      const mainRequest = api
         .get(apiUrl, {
           headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
         })
         .then((response) => {
           rows.value = response.data.records;
           pagination.value.rowsNumber = response.data.count;
-          loading.value = false;
-        })
-        .catch((e) => {
-          console.log(e);
-          loading.value = false;
         });
 
-      // Формируем базовый URL запроса
-      let ApiUrlLog = 'https://ingeni.app/api/?log_modules';
-
-      // Добавляем параметры client и log_module, если они не пустые
-      if (client.value) {
-        ApiUrlLog += '&client=' + client.value;
-      }
-
-      api
-        .get(ApiUrlLog, {
-          headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
-        })
+      const logModulesRequest = api
+        .get(
+          `https://ingeni.app/api/?log_modules${
+            client.value ? '&client=' + client.value : ''
+          }`,
+          {
+            headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
+          }
+        )
         .then((response) => {
           log_modules.value = response.data.records;
-          // pagination.value.rowsNumber = response.data.count;
-          // loading.value = false;
-        })
-        .catch((e) => {
-          console.log(e);
-          // loading.value = false;
         });
 
-      api
+      const clientsRequest = api
         .get('https://ingeni.app/api/?clients', {
           headers: { Authorization: 'Bearer Sceh~Bst##1DaKFR}fCv' },
         })
         .then((response) => {
           clients.value = response.data.records;
-          // pagination.value.rowsNumber = response.data.count;
-          // loading.value = false;
+        });
+
+      // Дожидаемся завершения всех запросов
+      Promise.all([mainRequest, logModulesRequest, clientsRequest])
+        .catch((error) => {
+          console.error(error);
         })
-        .catch((e) => {
-          console.log(e);
-          // loading.value = false;
+        .finally(() => {
+          loading.value = false; // Скрываем спиннер после завершения всех запросов
         });
     }
 

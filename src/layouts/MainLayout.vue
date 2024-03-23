@@ -40,11 +40,13 @@
         @update:model-value="handleTabClick"
         dense
         no-caps
+        inline-label
         class="bg-primary text-white"
         align="justify"
       >
         <q-tab
           v-for="link in essentialLinks"
+          :icon="link.icon"
           :key="link.title"
           :name="link.title"
           :label="link.title"

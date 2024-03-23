@@ -17,7 +17,8 @@
         <div class="flex row items-center q-gutter-sm">
           <!-- Строка поиска, скрыта по умолчанию -->
           <q-input
-            filled
+            rounded
+            standout
             v-model="searchText"
             v-show="showSearch"
             dense

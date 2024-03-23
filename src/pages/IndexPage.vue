@@ -229,6 +229,7 @@
                   : 'keyboard_arrow_down'
               "
             ></q-icon>
+            <q-icon size="sm" name="repeat_one"></q-icon>
           </q-td>
         </q-tr>
         <q-tr v-if="$q.screen.gt.xs" v-show="props.row._showDetails">
@@ -241,7 +242,11 @@
           </q-td>
         </q-tr>
         <!-- Адаптированный макет для экранов меньше или равных XS -->
-        <q-tr v-if="!$q.screen.gt.xs" :props="props">
+        <q-tr
+          v-if="!$q.screen.gt.xs"
+          :props="props"
+          :class="{ 'highlighted-row': props.row._isNew }"
+        >
           <q-td class="q-pa-none" colspan="100%">
             <div class="q-pa-sm">
               <div>
@@ -276,6 +281,7 @@
                       : 'keyboard_arrow_down'
                   "
                 ></q-icon>
+                <q-icon size="sm" name="repeat_one"></q-icon>
               </div>
               <div v-if="!$q.screen.gt.xs" v-show="props.row._showDetails">
                 <div class="text-h6" style="margin-bottom: 10px">
@@ -315,6 +321,7 @@
     </q-table>
     <q-inner-loading
       :showing="loading"
+      v-if="!autoRefresh"
       label="Спрашиваю в базе..."
       label-class="text-primary"
       label-style="font-size: 1.1em"
@@ -384,14 +391,27 @@ export default defineComponent({
     const clients = ref([]);
     const client = ref(null);
 
-    // Текущая дата
-    const today = new Date();
+    // Получаем текущую дату в UTC
+    const now = new Date();
 
-    // Начало дня по московскому времени
-    const from = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+    // Смещение для Москвы в миллисекундах (UTC+3)
+    const offset = 3 * 60 * 60 * 1000; // 3 часа * 60 минут * 60 секунд * 1000 миллисекунд
 
-    // Конец дня по московскому времени
-    const to = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+    // Корректируем текущую дату с учетом московского времени
+    const todayMoscow = new Date(now.getTime() + offset);
+
+    // Устанавливаем начало дня по московскому времени
+    const from = new Date(todayMoscow.setHours(0, 0, 0, 0));
+
+    // Возвращаемся к текущей дате московского времени перед установкой конца дня
+    todayMoscow.setTime(from.getTime());
+
+    // Устанавливаем конец дня по московскому времени
+    const to = new Date(todayMoscow.setHours(23, 59, 59, 999));
+
+    // Конвертируем в ISO строки для вывода
+    const fromISO = from.toISOString();
+    const toISO = to.toISOString();
 
     const previousRows = ref([]);
     const autoRefresh = ref(false);
@@ -433,12 +453,14 @@ export default defineComponent({
           const newRows = response.data.records;
 
           // Сравниваем каждую новую строку со списком предыдущих строк
-          newRows.forEach((newRow) => {
-            const isNewRow = !previousRows.value.some(
-              (previousRow) => previousRow.log_id === newRow.log_id
-            );
-            newRow._isNew = isNewRow; // Прямое присваивание для Vue 3
-          });
+          if (previousRows.value.length > 0) {
+            newRows.forEach((newRow) => {
+              const isNewRow = !previousRows.value.some(
+                (previousRow) => previousRow.log_id === newRow.log_id
+              );
+              newRow._isNew = isNewRow; // Прямое присваивание для Vue 3
+            });
+          }
 
           // Обновляем текущий набор строк интерфейса
           rows.value = newRows;
@@ -446,7 +468,7 @@ export default defineComponent({
           // Задержка перед обновлением списка старых строк
           setTimeout(() => {
             previousRows.value = newRows.map((row) => ({ ...row }));
-          }, 8000); // Задержка в 5000 мс (5 секунд)
+          }, 5000); // Задержка в 5000 мс (5 секунд)
 
           pagination.value.rowsNumber = response.data.count;
         });

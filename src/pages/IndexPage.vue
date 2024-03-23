@@ -257,9 +257,15 @@
                 ></q-icon>
               </div>
               <div v-if="!$q.screen.gt.xs" v-show="props.row._showDetails">
-                <strong>Заголовок запроса:</strong>
+                <div class="text-h6" style="margin-bottom: 10px">
+                  Заголовок запроса
+                </div>
+                <!-- Заголовок для JsonViewer -->
                 <JsonViewer :value="props.row.headers" copyable sort />
-                <strong>Тело запроса:</strong>
+                <div class="text-h6" style="margin-bottom: 10px">
+                  Тело запроса
+                </div>
+                <!-- Заголовок для JsonViewer -->
                 <JsonViewer
                   :value="props.row.body"
                   :expand-depth="4"

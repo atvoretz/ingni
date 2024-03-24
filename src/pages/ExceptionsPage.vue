@@ -13,141 +13,170 @@
       binary-state-sort
     >
       <template v-slot:top="props">
-        <q-select
-          outlined
-          clearable
-          v-model="client"
-          :options="clients"
-          option-value="account_id"
-          option-label="clients_for_select"
-          label="Клиенты"
-          emit-value
-          map-options
-          style="min-width: 250px"
-          @update:model-value="onRequest(props)"
-        />
-        <q-space />
-        <q-select
-          outlined
-          clearable
-          v-model="log_module"
-          :options="log_modules"
-          label="Модули"
-          option-value="module"
-          option-label="module"
-          emit-value
-          map-options
-          style="min-width: 250px"
-          @update:model-value="onRequest(props)"
-        />
-        <q-space />
-        <q-input
-          outlined
-          clearable
-          v-model="from"
-          @update:model-value="onRequest(props)"
-        >
-          <template v-slot:prepend>
-            <q-icon name="event" class="cursor-pointer">
-              <q-popup-proxy
-                cover
-                transition-show="scale"
-                transition-hide="scale"
-              >
-                <q-date
-                  v-model="from"
-                  mask="YYYY-MM-DD HH:mm:ss"
-                  @update:model-value="onRequest(props)"
-                >
-                  <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Close" color="primary" flat />
-                  </div>
-                </q-date>
-              </q-popup-proxy>
-            </q-icon>
-          </template>
-          <q-space />
-          <template v-slot:append>
-            <q-icon name="access_time" class="cursor-pointer">
-              <q-popup-proxy
-                cover
-                transition-show="scale"
-                transition-hide="scale"
-              >
-                <q-time
-                  v-model="from"
-                  mask="YYYY-MM-DD HH:mm:ss"
-                  format24h
-                  @update:model-value="onRequest(props)"
-                >
-                  <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Закрыть" color="primary" flat />
-                  </div>
-                </q-time>
-              </q-popup-proxy>
-            </q-icon>
-          </template>
-        </q-input>
-        <q-space />
-        <q-input
-          outlined
-          clearable
-          v-model="to"
-          @update:model-value="onRequest(props)"
-        >
-          <template v-slot:prepend>
-            <q-icon name="event" class="cursor-pointer">
-              <q-popup-proxy
-                cover
-                transition-show="scale"
-                transition-hide="scale"
-              >
-                <q-date
-                  v-model="to"
-                  mask="YYYY-MM-DD HH:mm:ss"
-                  @update:model-value="onRequest(props)"
-                >
-                  <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Close" color="primary" flat />
-                  </div>
-                </q-date>
-              </q-popup-proxy>
-            </q-icon>
-          </template>
+        <div class="q-gutter-md" style="width: 100%">
+          <div class="row items-center">
+            <div class="col-12 col-md-3 col-lg-3 q-pa-xs">
+              <q-select
+                outlined
+                clearable
+                v-model="client"
+                :options="clients"
+                option-value="account_id"
+                option-label="clients_for_select"
+                label="Клиенты"
+                emit-value
+                map-options
+                @update:model-value="onRequest(props)"
+                dense
+              />
+            </div>
 
-          <template v-slot:append>
-            <q-icon name="access_time" class="cursor-pointer">
-              <q-popup-proxy
-                cover
-                transition-show="scale"
-                transition-hide="scale"
+            <div class="col-12 col-md-2 col-lg-2 q-pa-xs">
+              <q-select
+                outlined
+                clearable
+                v-model="log_module"
+                :options="log_modules"
+                label="Модули"
+                option-value="module"
+                option-label="module"
+                emit-value
+                map-options
+                @update:model-value="onRequest(props)"
+                dense
+              />
+            </div>
+
+            <!-- Дополнительные фильтры -->
+            <div class="col-12 col-md-3 col-lg-2 q-pa-xs">
+              <q-input
+                outlined
+                clearable
+                v-model="from"
+                dense
+                @update:model-value="onRequest(props)"
               >
-                <q-time
-                  v-model="to"
-                  mask="YYYY-MM-DD HH:mm:ss"
-                  format24h
-                  @update:model-value="onRequest(props)"
-                >
-                  <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Close" color="primary" flat />
-                  </div>
-                </q-time>
-              </q-popup-proxy>
-            </q-icon>
-          </template>
-        </q-input>
-        <q-space />
-        <!-- <q-input
-          borderless
-          dense
-          debounce="300"
-          color="primary"
-          v-model="filter"
-        >
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input> -->
+                <template v-slot:prepend>
+                  <q-icon name="event" class="cursor-pointer">
+                    <q-popup-proxy
+                      cover
+                      transition-show="scale"
+                      transition-hide="scale"
+                      dense
+                    >
+                      <q-date
+                        v-model="from"
+                        mask="YYYY-MM-DD HH:mm:ss"
+                        @update:model-value="onRequest(props)"
+                        dense
+                      >
+                        <div class="row items-center justify-end">
+                          <q-btn
+                            v-close-popup
+                            label="Закрыть"
+                            color="primary"
+                            flat
+                          />
+                        </div>
+                      </q-date>
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+                <q-space />
+                <template v-slot:append>
+                  <q-icon name="access_time" class="cursor-pointer">
+                    <q-popup-proxy
+                      cover
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
+                      <q-time
+                        v-model="from"
+                        mask="YYYY-MM-DD HH:mm:ss"
+                        format24h
+                        @update:model-value="onRequest(props)"
+                      >
+                        <div class="row items-center justify-end">
+                          <q-btn
+                            v-close-popup
+                            label="Закрыть"
+                            color="primary"
+                            flat
+                          />
+                        </div>
+                      </q-time>
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+              </q-input>
+            </div>
+
+            <div class="col-12 col-md-3 col-lg-3 q-pa-xs">
+              <q-input
+                outlined
+                clearable
+                dense
+                v-model="to"
+                @update:model-value="onRequest(props)"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="event" class="cursor-pointer">
+                    <q-popup-proxy
+                      cover
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
+                      <q-date
+                        v-model="to"
+                        mask="YYYY-MM-DD HH:mm:ss"
+                        @update:model-value="onRequest(props)"
+                      >
+                        <div class="row items-center justify-end">
+                          <q-btn
+                            v-close-popup
+                            label="Закрыть"
+                            color="primary"
+                            flat
+                          />
+                        </div>
+                      </q-date>
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+
+                <template v-slot:append>
+                  <q-icon name="access_time" class="cursor-pointer">
+                    <q-popup-proxy
+                      cover
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
+                      <q-time
+                        v-model="to"
+                        mask="YYYY-MM-DD HH:mm:ss"
+                        format24h
+                        @update:model-value="onRequest(props)"
+                      >
+                        <div class="row items-center justify-end">
+                          <q-btn
+                            v-close-popup
+                            label="Закрыть"
+                            color="primary"
+                            flat
+                          />
+                        </div>
+                      </q-time>
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+              </q-input>
+            </div>
+            <div class="col-1 col-md-1 col-lg-1 q-pa-xs">{{ count }} шт.</div>
+            <!-- <div class="col-12 col-md-6 col-lg-3 q-pa-xs">
+          <q-toggle v-model="autoRefresh" label="Автообновление"></q-toggle>
+        </div> -->
+          </div>
+        </div>
       </template>
 
       <template v-slot:header="props">
@@ -257,6 +286,7 @@ export default defineComponent({
     const client = ref(null);
     const from = ref(null);
     const to = ref(null);
+    const count = ref(null);
 
     const pagination = ref({
       sortBy: 'desc',
@@ -310,6 +340,7 @@ export default defineComponent({
         .then((response) => {
           rows.value = response.data.records;
           pagination.value.rowsNumber = response.data.count;
+          count.value = response.data.count;
           loading.value = false;
         })
         .catch((e) => {
@@ -373,6 +404,7 @@ export default defineComponent({
       columns,
       name: 'PageIndex',
       onRequest,
+      count,
     };
   },
 });
@@ -386,8 +418,8 @@ export default defineComponent({
 
 .fixed-td {
   width: 20%; /* Равномерное распределение на 4 колонки */
+  white-space: nowrap; /* Запрет переноса текста */
   overflow: hidden; /* Обрезание текста, если он не помещается */
-  white-space: normal;
   text-overflow: ellipsis; /* Вывод многоточия, если текст обрезается */
 }
 

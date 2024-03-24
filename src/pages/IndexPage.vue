@@ -13,7 +13,7 @@
       <template v-slot:top="props">
         <div class="q-gutter-md" style="width: 100%">
           <div class="row items-center">
-            <div class="col-12 col-md-6 col-lg-3 q-pa-xs">
+            <div class="col-12 col-md-3 col-lg-3 q-pa-xs">
               <q-select
                 outlined
                 clearable
@@ -29,7 +29,7 @@
               />
             </div>
 
-            <div class="col-12 col-md-6 col-lg-3 q-pa-xs">
+            <div class="col-12 col-md-2 col-lg-2 q-pa-xs">
               <q-select
                 outlined
                 clearable
@@ -46,7 +46,7 @@
             </div>
 
             <!-- Дополнительные фильтры -->
-            <div class="col-12 col-md-6 col-lg-3 q-pa-xs">
+            <div class="col-12 col-md-3 col-lg-2 q-pa-xs">
               <q-input
                 outlined
                 clearable
@@ -109,7 +109,7 @@
               </q-input>
             </div>
 
-            <div class="col-12 col-md-6 col-lg-3 q-pa-xs">
+            <div class="col-12 col-md-3 col-lg-3 q-pa-xs">
               <q-input
                 outlined
                 clearable
@@ -169,9 +169,10 @@
                 </template>
               </q-input>
             </div>
-            <div class="col-12 col-md-6 col-lg-3 q-pa-xs">
+            <div class="col-1 col-md-1 col-lg-1 q-pa-xs">{{ count }} шт.</div>
+            <!-- <div class="col-12 col-md-6 col-lg-3 q-pa-xs">
               <q-toggle v-model="autoRefresh" label="Автообновление"></q-toggle>
-            </div>
+            </div> -->
           </div>
         </div>
       </template>
@@ -192,7 +193,7 @@
         <q-tr
           v-if="$q.screen.gt.xs"
           :props="props"
-          :class="{ 'highlighted-row': props.row._isNew }"
+          :class="{ 'highlighted-row': props.row._isNew && autoRefresh }"
         >
           <q-td key="rowNumber" :props="props" class="fixed-td-number">
             {{
@@ -390,6 +391,7 @@ export default defineComponent({
     const log_module = ref(null);
     const clients = ref([]);
     const client = ref(null);
+    const count = ref(null);
     const from = ref(null);
     const to = ref(null);
     const previousRows = ref([]);
@@ -438,6 +440,8 @@ export default defineComponent({
         })
         .then((response) => {
           const newRows = response.data.records;
+
+          count.value = response.data.count;
 
           // Сравниваем каждую новую строку со списком предыдущих строк
           if (previousRows.value.length > 0) {
@@ -603,6 +607,7 @@ export default defineComponent({
       onRequest,
       autoRefresh,
       autoRefreshInterval,
+      count,
     };
   },
 });

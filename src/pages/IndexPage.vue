@@ -333,7 +333,7 @@
 
 <script>
 import JsonViewer from 'vue-json-viewer';
-import { ref, onMounted, watch, watchEffect, onUnmounted } from 'vue';
+import { ref, onMounted, watch, watchEffect, onUnmounted, nextTick } from 'vue';
 import { defineComponent } from 'vue';
 import { api } from 'boot/axios';
 
@@ -390,32 +390,12 @@ export default defineComponent({
     const log_module = ref(null);
     const clients = ref([]);
     const client = ref(null);
-
-    // Получаем текущую дату в UTC
-    const now = new Date();
-
-    // Смещение для Москвы в миллисекундах (UTC+3)
-    const offset = 3 * 60 * 60 * 1000; // 3 часа * 60 минут * 60 секунд * 1000 миллисекунд
-
-    // Корректируем текущую дату с учетом московского времени
-    const todayMoscow = new Date(now.getTime() + offset);
-
-    // Устанавливаем начало дня по московскому времени
-    const from = new Date(todayMoscow.setHours(0, 0, 0, 0));
-
-    // Возвращаемся к текущей дате московского времени перед установкой конца дня
-    todayMoscow.setTime(from.getTime());
-
-    // Устанавливаем конец дня по московскому времени
-    const to = new Date(todayMoscow.setHours(23, 59, 59, 999));
-
-    // Конвертируем в ISO строки для вывода
-    const fromISO = from.toISOString();
-    const toISO = to.toISOString();
-
+    const from = ref(null);
+    const to = ref(null);
     const previousRows = ref([]);
     const autoRefresh = ref(false);
     const autoRefreshInterval = ref(null);
+    const isInitialized = ref(false);
 
     const pagination = ref({
       sortBy: 'desc',
@@ -425,7 +405,14 @@ export default defineComponent({
     });
 
     function onRequest() {
-      loading.value = true; // Показываем спиннер перед запросами
+      loading.value = true;
+      if (!isInitialized.value || !from.value || !to.value) {
+        console.log(
+          'onRequest пропущен из-за отсутствия начальной инициализации или дат.'
+        );
+        return; // Прекращаем выполнение функции, если инициализация не завершена или даты не установлены
+      }
+      // Показываем спиннер перед запросами
 
       const { page, rowsPerPage, sortBy, descending } = pagination.value;
       console.log('onRequest called with:', {
@@ -512,10 +499,53 @@ export default defineComponent({
         });
     }
 
-    onMounted(() => {
-      tableRef.value.requestServerInteraction();
-    });
+    onMounted(async () => {
+      // Создаём объект Date, представляющий текущий момент времени в UTC
+      const now = new Date();
 
+      const fromDateTime = new Date(
+        Date.UTC(
+          now.getUTCFullYear(),
+          now.getUTCMonth(),
+          now.getUTCDate(),
+          0,
+          0,
+          0
+        )
+      );
+      const toDateTime = new Date(
+        Date.UTC(
+          now.getUTCFullYear(),
+          now.getUTCMonth(),
+          now.getUTCDate(),
+          23,
+          59,
+          59
+        )
+      );
+
+      // Конвертируем в строки формата ISO, заменяем T на пробел, убираем миллисекунды и символ 'Z'
+      const fromISOString = fromDateTime
+        .toISOString()
+        .replace('T', ' ')
+        .replace(/\.\d{3}Z$/, ''); // Преобразует "2023-03-28T00:00:00.000Z" в "2023-03-28 00:00:00"
+      const toISOString = toDateTime
+        .toISOString()
+        .replace('T', ' ')
+        .replace(/\.\d{3}Z$/, ''); // Преобразует "2023-03-28T23:59:59.000Z" в "2023-03-28 23:59:59"
+
+      from.value = fromISOString;
+      to.value = toISOString;
+
+      isInitialized.value = true;
+
+      await nextTick(); // Дожидаемся обновления DOM, если это необходимо
+
+      // Здесь вызовите ваш метод, если он должен выполниться после инициализации
+      if (tableRef.value && tableRef.value.requestServerInteraction) {
+        tableRef.value.requestServerInteraction();
+      }
+    });
     watchEffect(async () => {
       try {
         // Очищаем интервал при каждом изменении autoRefresh или компонента размонтируется

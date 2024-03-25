@@ -85,7 +85,7 @@
 
           <q-item-section>
             <q-item-label lines="1">{{ link.title }}</q-item-label>
-            <q-item-label caption lines="3">{{ link.caption }}</q-item-label>
+            <q-item-label caption lines="2">{{ link.caption }}</q-item-label>
           </q-item-section>
         </q-item>
       </q-list>

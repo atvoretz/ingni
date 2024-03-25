@@ -8,6 +8,7 @@
       row-key="id"
       v-model:pagination="pagination"
       @request="onRequest"
+      :filter="filter"
       binary-state-sort
     >
       <template v-slot:top="props">
@@ -170,9 +171,6 @@
               </q-input>
             </div>
             <div class="col-1 col-md-1 col-lg-1 q-pa-xs">{{ count }} шт.</div>
-            <!-- <div class="col-12 col-md-6 col-lg-3 q-pa-xs">
-              <q-toggle v-model="autoRefresh" label="Автообновление"></q-toggle>
-            </div> -->
           </div>
         </div>
       </template>
@@ -190,17 +188,9 @@
       </template>
       <!-- Vue template -->
       <template v-slot:body="props">
-        <q-tr
-          v-if="$q.screen.gt.xs"
-          :props="props"
-          :class="{ 'highlighted-row': props.row._isNew && autoRefresh }"
-        >
+        <q-tr v-if="$q.screen.gt.xs" :props="props">
           <q-td key="rowNumber" :props="props" class="fixed-td-number">
-            {{
-              props.rowIndex +
-              1 +
-              (pagination.page - 1) * pagination.rowsPerPage
-            }}
+            {{ props.rowIndex + 1 }}
           </q-td>
           <q-td key="date_time" :props="props" class="fixed-td">
             {{ props.row.date_time }}
@@ -251,11 +241,7 @@
           <q-td class="q-pa-none" colspan="100%">
             <div class="q-pa-sm">
               <div>
-                {{
-                  props.rowIndex +
-                  1 +
-                  (pagination.page - 1) * pagination.rowsPerPage
-                }}
+                {{ props.rowIndex + 1 }}
               </div>
 
               <div>
@@ -322,7 +308,6 @@
     </q-table>
     <q-inner-loading
       :showing="loading"
-      v-if="!autoRefresh"
       label="Спрашиваю в базе..."
       label-class="text-primary"
       label-style="font-size: 1.1em"
@@ -395,8 +380,6 @@ export default defineComponent({
     const from = ref(null);
     const to = ref(null);
     const previousRows = ref([]);
-    const autoRefresh = ref(false);
-    const autoRefreshInterval = ref(null);
     const isInitialized = ref(false);
 
     const pagination = ref({
@@ -406,17 +389,11 @@ export default defineComponent({
       rowsPerPage: 25,
     });
 
-    function onRequest() {
-      loading.value = true;
-      if (!isInitialized.value || !from.value || !to.value) {
-        console.log(
-          'onRequest пропущен из-за отсутствия начальной инициализации или дат.'
-        );
-        return; // Прекращаем выполнение функции, если инициализация не завершена или даты не установлены
-      }
+    function onRequest(props) {
+      const { page, rowsPerPage, sortBy, descending } = props.pagination;
       // Показываем спиннер перед запросами
+      loading.value = true;
 
-      const { page, rowsPerPage, sortBy, descending } = pagination.value;
       console.log('onRequest called with:', {
         page,
         rowsPerPage,
@@ -424,7 +401,9 @@ export default defineComponent({
         descending,
       });
 
+      console.log('Before update:', pagination.value.page);
       pagination.value.page = page;
+      console.log('After update:', pagination.value.page);
       pagination.value.rowsPerPage = rowsPerPage;
 
       // Формируем URL для основного запроса данных
@@ -550,45 +529,6 @@ export default defineComponent({
         tableRef.value.requestServerInteraction();
       }
     });
-    watchEffect(async () => {
-      try {
-        // Очищаем интервал при каждом изменении autoRefresh или компонента размонтируется
-        if (autoRefreshInterval.value) {
-          clearInterval(autoRefreshInterval.value);
-          autoRefreshInterval.value = null;
-        }
-
-        if (autoRefresh.value) {
-          onRequest(); // Вызываем немедленно, если autoRefresh активирован
-          // Устанавливаем интервал для периодического вызова
-          autoRefreshInterval.value = setInterval(onRequest, 10000);
-        }
-      } catch (error) {
-        console.error(
-          'Ошибка при выполнении асинхронной операции в watchEffect:',
-          error
-        );
-      }
-    });
-
-    watch(autoRefresh, (newValue) => {
-      // Очистка существующего интервала при любом изменении autoRefresh
-      if (autoRefreshInterval.value) {
-        clearInterval(autoRefreshInterval.value);
-        autoRefreshInterval.value = null; // Если используется ref
-      }
-
-      if (newValue) {
-        onRequest(); // Немедленно выполнить запрос
-        autoRefreshInterval.value = setInterval(() => {
-          onRequest(); // Повторный запрос каждые X миллисекунд
-        }, 10000); // Например, каждые 10 секунд
-      }
-    });
-
-    onUnmounted(() => {
-      if (autoRefreshInterval.value) clearInterval(autoRefreshInterval.value);
-    });
 
     return {
       tableRef,
@@ -605,8 +545,6 @@ export default defineComponent({
       columns,
       name: 'PageIndex',
       onRequest,
-      autoRefresh,
-      autoRefreshInterval,
       count,
     };
   },

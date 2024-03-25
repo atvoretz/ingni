@@ -25,10 +25,22 @@
             <q-btn icon="more_vert" round flat>
               <q-menu fit anchor="bottom start" self="center left">
                 <q-item clickable>
-                  <q-item-section>New tab</q-item-section>
+                  <q-item-section>Редактировать профиль</q-item-section>
                 </q-item>
                 <q-item clickable>
-                  <q-item-section>New incognito tab</q-item-section>
+                  <q-item-section>Пользователи amoCRM</q-item-section>
+                </q-item>
+                <q-item clickable>
+                  <q-item-section>Воронки и этапы</q-item-section>
+                </q-item>
+                <q-item clickable>
+                  <q-item-section>Поля сделки</q-item-section>
+                </q-item>
+                <q-item clickable>
+                  <q-item-section>Поля контактов</q-item-section>
+                </q-item>
+                <q-item clickable>
+                  <q-item-section>Поля компаний</q-item-section>
                 </q-item>
               </q-menu>
             </q-btn>

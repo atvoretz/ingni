@@ -170,7 +170,9 @@
                 </template>
               </q-input>
             </div>
-            <div class="col-1 col-md-1 col-lg-1 q-pa-xs">{{ count }} шт.</div>
+            <div class="col-1 col-md-1 col-lg-1 q-pa-xs">
+              {{ countFromApi }} шт.
+            </div>
           </div>
         </div>
       </template>
@@ -319,7 +321,7 @@
 
 <script>
 import JsonViewer from 'vue-json-viewer';
-import { ref, onMounted, watch, watchEffect, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { defineComponent } from 'vue';
 import { api } from 'boot/axios';
 
@@ -376,10 +378,11 @@ export default defineComponent({
     const log_module = ref(null);
     const clients = ref([]);
     const client = ref(null);
-    const count = ref(null);
+    const countFromApi = ref(null);
     const from = ref(null);
     const to = ref(null);
     const previousRows = ref([]);
+    const newRows = ref([]);
     const isInitialized = ref(false);
 
     const pagination = ref({
@@ -420,7 +423,7 @@ export default defineComponent({
         .then((response) => {
           const newRows = response.data.records;
 
-          count.value = response.data.count;
+          countFromApi.value = response.data.count;
 
           // Сравниваем каждую новую строку со списком предыдущих строк
           if (previousRows.value.length > 0) {
@@ -482,7 +485,7 @@ export default defineComponent({
         });
     }
 
-    onMounted(async () => {
+    onMounted(() => {
       // Создаём объект Date, представляющий текущий момент времени в UTC
       const now = new Date();
 
@@ -522,7 +525,7 @@ export default defineComponent({
 
       isInitialized.value = true;
 
-      await nextTick(); // Дожидаемся обновления DOM, если это необходимо
+      // await nextTick(); // Дожидаемся обновления DOM, если это необходимо
 
       // Здесь вызовите ваш метод, если он должен выполниться после инициализации
       if (tableRef.value && tableRef.value.requestServerInteraction) {
@@ -545,7 +548,10 @@ export default defineComponent({
       columns,
       name: 'PageIndex',
       onRequest,
-      count,
+      countFromApi,
+      newRows,
+      previousRows,
+      JsonViewer,
     };
   },
 });
